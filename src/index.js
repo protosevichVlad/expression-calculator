@@ -47,12 +47,8 @@ function delete_space(str){
 function check_brackets(str){
     let open_br = 0;
     for(let i = 0; i < str.length; i++){
-        if(str[i] == '('){
-            open_br++;
-        }
-        if(str[i] == ')'){
-            open_br--;
-        }
+        if(str[i] == '(') open_br++;
+        if(str[i] == ')') open_br--;
     }
     if(open_br != 0) throw Error('ExpressionError: Brackets must be paired');
 }
@@ -61,7 +57,6 @@ function check_brackets(str){
 function expressionCalculator(expr) {
     expr = delete_space(expr);
     check_brackets(expr);
-    expr = expr.replace(/\-\-/g, '+');
     while (expr.indexOf('(') != -1){
         let open_index_br = expr.lastIndexOf('(');
         let close_index_br = expr.indexOf(')', open_index_br);
@@ -73,6 +68,7 @@ function expressionCalculator(expr) {
         if(expr[i][expr[i].length - 1] === '*' || expr[i][expr[i].length - 1] === '/' || expr[i][expr[i].length - 1] === '+'){
             expr[i] += expr[i + 1];
             expr.splice(i+1, 1);
+            i--;
         }
     }
     for(let i = 0; i < expr.length; i++){
@@ -83,20 +79,21 @@ function expressionCalculator(expr) {
         }
         expr[i] = temp[0];
     }
+
     while(expr.length > 1){
+        if(expr[1] == '-'){
+            expr[1] = (expr[1] + expr[2]).replace(/\+\-/g, '-').replace(/\-\-/g, '+').replace(/\-\+/g, '-').replace(/\+\+/g, '+');
+            expr.splice(2, 1);
+        }
         expr[0] = simpleEval(expr[0]+expr[1]);
         expr.splice(1, 1);
     }
     if(expr[0][0] == "+"){
         expr[0] = expr[0].split('').slice(1).join('');
     }
-
     return Number(expr[0]);
 }
 
 module.exports = {
     expressionCalculator
 }
-
-// console.log('out:', expressionCalculator('3 * 26 / (  (  75 / 18 * 91 * 38  ) / 53 - (  52 / 34 - (  10 * 67 - 50 - 78  ) * 51 + 58  )  ) + 73 '));
-// console.log('out:', expressionCalculator('72*3/36*-18.571428571428573'));
